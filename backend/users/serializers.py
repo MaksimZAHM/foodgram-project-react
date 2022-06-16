@@ -1,10 +1,10 @@
 import re
-
 from django.contrib.auth import password_validation as pass_val
-from recipes.serializers import RecipePartialSerializer
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
-from .models import Subscription, User
+from users.models import Subscription, User
+from recipes.serializers import RecipePartialSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -111,3 +111,34 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
     def get_recipes_count(self, subscribe):
         return subscribe.recipes.count()
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Subscription
+        fields = ('user', 'subscribe')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Subscription.objects.all(),
+                fields=['user', 'subscribe']
+            )
+        ]
+    
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        serializer = SubscribeSerializer(
+            instance,
+            context=context
+        )
+        return serializer.data
+
+    def validate(self, data):
+        user = data.get('user')
+        subscribe = data.get('subscribe')
+        if user == subscribe:
+            raise serializers.ValidationError(
+                'Нельзя подписаться на самого себя!'
+            )
+        return data

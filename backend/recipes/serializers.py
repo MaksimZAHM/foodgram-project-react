@@ -6,7 +6,7 @@ import six
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 
-from .models import Recipe
+from recipes.models import Recipe
 
 
 class Base64ImageField(serializers.ImageField):

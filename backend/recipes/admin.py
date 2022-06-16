@@ -38,7 +38,26 @@ class IngredientAdmin(admin.ModelAdmin):
     search_fields = ('name__icontains',)
 
 
-admin.site.register(Amount)
-admin.site.register(Favorite)
-admin.site.register(ShoppingCart)
-admin.site.register(Tag)
+@admin.register(Amount)
+class AmountAdmin(admin.ModelAdmin):
+    list_display = ('id', 'amount', 'ingredient')
+    list_display_links = ('id', 'amount', 'ingredient')
+    search_fields = ('ingredient',)
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'recipe')
+    search_fields = ('user', 'recipe')
+
+
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'recipe')
+    search_fields = ('user', 'recipe')
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'color', 'slug')
+    search_fields = ('name', 'color', 'slug')

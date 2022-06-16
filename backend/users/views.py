@@ -1,21 +1,20 @@
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from djoser.serializers import SetPasswordSerializer
 from rest_framework import permissions, status, views
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import Subscription, User
-from .permissions import IsAuthOrCreateList
-from .serializers import (SubscribeSerializer, UserCreateSerializer,
-                          UserSerializer)
-from .mixins import CreateRetrieveListViewSet
+from users.models import Subscription, User
+from users.permissions import IsAuthOrCreateList
+from users.serializers import (SubscribeSerializer, SubscriptionSerializer,
+                               UserCreateSerializer, UserSerializer)
+from users.mixins import CreateRetrieveListViewSet
 
 
 class UserViewSet(CreateRetrieveListViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthOrCreateList]
+    permission_classes = (IsAuthOrCreateList,)
 
     serializer_classes = {
         'create': UserCreateSerializer,
@@ -33,7 +32,7 @@ class UserViewSet(CreateRetrieveListViewSet):
     @action(
         detail=False,
         methods=['GET'],
-        permission_classes=[permissions.IsAuthenticated],
+        permission_classes=(permissions.IsAuthenticated,)
     )
     def me(self, request):
         serializer = self.get_serializer(request.user)
@@ -45,7 +44,7 @@ class UserViewSet(CreateRetrieveListViewSet):
     @action(
         detail=False,
         methods=['POST'],
-        permission_classes=[permissions.IsAuthenticated]
+        permission_classes=(permissions.IsAuthenticated,)
     )
     def set_password(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -59,7 +58,7 @@ class UserViewSet(CreateRetrieveListViewSet):
     @action(
         detail=False,
         methods=['GET'],
-        permission_classes=[permissions.IsAuthenticated]
+        permission_classes=(permissions.IsAuthenticated,)
     )
     def subscriptions(self, request, *args, **kwargs):
         subscribe_users = User.objects.filter(subscribing__user=request.user)
@@ -69,39 +68,25 @@ class UserViewSet(CreateRetrieveListViewSet):
 
 
 class SubscriptionView(views.APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, user_id):
         subscribe_user = get_object_or_404(User, id=user_id)
-        double_subscribe = Subscription.objects.filter(
-            user=request.user,
-            subscribe=subscribe_user
-        ).exists()
-        if request.user.id == int(user_id):
-            error = {'errors': 'Невозможно подписаться на самого себя'}
-            return Response(error, status=status.HTTP_400_BAD_REQUEST)
-        elif double_subscribe:
-            error = {'errors': 'Вы уже подписаны на этого пользователя'}
-            return Response(error, status=status.HTTP_400_BAD_REQUEST)
-        Subscription.objects.create(
-            user=request.user,
-            subscribe=subscribe_user
-        )
-        serializer = SubscribeSerializer(
-            subscribe_user,
+        user = self.request.user
+        data = {'subscribe': subscribe_user.id, 'user': user.id}
+        serializer = SubscriptionSerializer(
+            data=data,
             context={'request': request}
         )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, user_id):
         subscribe_user = get_object_or_404(User, id=user_id)
-        try:
-            subscribe = Subscription.objects.get(
-                user=request.user,
-                subscribe=subscribe_user
-            )
-        except ObjectDoesNotExist:
-            error = {'errors': 'Вы не подписаны на этого пользователя'}
-            return Response(error, status=status.HTTP_400_BAD_REQUEST)
-        subscribe.delete()
+        user = self.request.user
+        subscription = get_object_or_404(
+            Subscription, user=user, subscribe=subscribe_user
+        )
+        subscription.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

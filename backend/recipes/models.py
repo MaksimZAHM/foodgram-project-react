@@ -82,11 +82,6 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name='Ингредиенты',
     )
-    is_favorited = models.BooleanField('В избранном', default=False)
-    is_in_shopping_cart = models.BooleanField(
-        'В списке покупок',
-        default=False
-    )
     name = models.CharField(max_length=150, verbose_name='Название')
     image = models.ImageField(
         'Картинка',
@@ -109,7 +104,7 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
-        return f'{self.name}'
+        return self.name
 
 
 class Favorite(models.Model):
@@ -129,12 +124,12 @@ class Favorite(models.Model):
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['user', 'recipe'],
+                fields=('user', 'recipe'),
                 name='unique_fav_user_recipe'
-            )
-        ]
+            ),
+        )
 
     def __str__(self):
         return f'{self.recipe.name} - {self.user.username}'
@@ -157,12 +152,12 @@ class ShoppingCart(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Список покупок'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['user', 'recipe'],
+                fields=('user', 'recipe'),
                 name='unique_sc_user_recipe'
-            )
-        ]
+            ),
+        )
 
     def __str__(self):
         return f'{self.recipe.name} - {self.user.username}'

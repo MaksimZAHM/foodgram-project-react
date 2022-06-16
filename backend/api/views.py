@@ -12,22 +12,24 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen.canvas import Canvas
 
+from foodgram.settings import FILE_NAME
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from recipes.serializers import RecipePartialSerializer
-from .mixins import RetrieveListViewSet
-from .filters import IngredientsFilter, RecipeFilter
-from .permissions import IsAuthOwnerOrReadOnly
-from .serializers import (
+from api.mixins import RetrieveListViewSet
+from api.filters import IngredientsFilter, RecipeFilter
+from api.permissions import IsAuthOwnerOrReadOnly
+from api.serializers import (
     IngredientsSerializer,
     RecipesCreateSerializer,
     RecipesSerializer,
     TagsSerializer)
 
+CONTENT_TYPE = 'application/pdf'
 
 class IngredientsViewSet(RetrieveListViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientsSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = (permissions.AllowAny,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientsFilter
     pagination_class = None
@@ -36,13 +38,13 @@ class IngredientsViewSet(RetrieveListViewSet):
 class TagsViewSet(RetrieveListViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagsSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = (permissions.AllowAny,)
     pagination_class = None
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = [IsAuthOwnerOrReadOnly]
+    permission_classes = (IsAuthOwnerOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
@@ -56,8 +58,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False,
-        methods=['GET'],
-        permission_classes=[permissions.IsAuthenticated],
+        methods=('GET',),
+        permission_classes=(permissions.IsAuthenticated)
     )
     def download_shopping_cart(self, request):
         user_recipes = Recipe.objects.filter(shopping_cart__user=request.user)
@@ -65,9 +67,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
             error = {'errors': 'Список рецептов пуст'}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
         ingredients = self._get_shopping_cart(user_recipes)
-        response = HttpResponse(content_type='application/pdf')
+        response = HttpResponse(content_type=CONTENT_TYPE)
         response['Content-Disposition'] = ('attachment; '
-                                           'filename="shopping_cart.pdf"')
+                                           'filename=FILE_NAME')
         canvas = Canvas(response)
         pdfmetrics.registerFont(TTFont('Roboto', 'Roboto.ttf'))
         canvas.setFont('Roboto', 50)
@@ -99,7 +101,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
 
 class FavoriteShoppingCartView(views.APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = {
         'favorite': Favorite.objects,
         'shopping_cart': ShoppingCart.objects

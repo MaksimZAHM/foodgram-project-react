@@ -20,12 +20,7 @@ class TagListField(serializers.RelatedField):
         }
 
     def to_internal_value(self, data):
-        try:
-            return Tag.objects.get(id=data)
-        except ObjectDoesNotExist:
-            raise serializers.ValidationError(
-                'Недопустимый первичный ключ "404" - объект не существует.'
-            )
+        return get_object_or_404 (Tag, id=data)         
 
 
 class TagsSerializer(serializers.ModelSerializer):
@@ -48,8 +43,14 @@ class IngredientsAmountSerializer(serializers.ModelSerializer):
         queryset=Ingredient.objects.all(),
         source='ingredient'
     )
-    name = serializers.SerializerMethodField(read_only=True)
-    measurement_unit = serializers.SerializerMethodField(read_only=True)
+    name = serializers.SerializerMethodField(
+        read_only=True,
+        method_name='get_name'
+    )
+    measurement_unit = serializers.SerializerMethodField(
+        read_only=True,
+        method_name='get_measurement_unit'
+    )
 
     class Meta:
         model = Amount
@@ -69,8 +70,14 @@ class RecipesSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     ingredients = IngredientsAmountSerializer(many=True)
     tags = TagsSerializer(many=True)
-    is_favorited = serializers.SerializerMethodField(read_only=True)
-    is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
+    is_favorited = serializers.SerializerMethodField(
+        read_only=True,
+        method_name='get_is_favorited'
+    )
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        read_only=True,
+        method_name='get_is_in_shopping_cart'
+    )
     image = Base64ImageField()
 
     class Meta:
@@ -145,7 +152,7 @@ class RecipesCreateSerializer(serializers.ModelSerializer):
         return instance
 
     def validate_name(self, name):
-        if not name.split(' ')[0].istitle():
+        if not name.split()[0].istitle():
             raise serializers.ValidationError(
                 'Название должно начинаться с заглавной буквы!'
             )

@@ -9,7 +9,7 @@ class IngredientsFilter(filters.FilterSet):
 
     class Meta:
         model = Ingredient
-        fields = ['name']
+        fields = ('name',)
 
 
 class RecipeFilter(filters.FilterSet):
@@ -30,7 +30,7 @@ class RecipeFilter(filters.FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ['tags', 'author', 'is_favorited', 'is_in_shopping_cart']
+        fields = ('tags', 'author', 'is_favorited', 'is_in_shopping_cart')
 
     def _get_params(self, key):
         return {f'{key}__user': self.request.user}

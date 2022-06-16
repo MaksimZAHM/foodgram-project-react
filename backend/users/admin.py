@@ -20,4 +20,12 @@ class UserAdmin(admin.ModelAdmin):
     list_filter = ('email', 'username')
 
 
-admin.site.register(Subscription)
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'user',
+        'subscribe'
+    )
+    list_filter = ('user', 'subscribe')
+    search_fields = ('user_username', 'user_email')

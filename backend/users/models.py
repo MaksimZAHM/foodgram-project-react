@@ -30,12 +30,12 @@ class User(AbstractUser):
         ordering = ('username',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['username', 'email'],
+                fields=('username', 'email'),
                 name='unique_username_email'
             )
-        ]
+        )
 
     def __str__(self):
         return self.username
@@ -45,23 +45,25 @@ class Subscription(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscriber'
+        related_name='subscriber',
+        verbose_name='Подписчик',
     )
     subscribe = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscribing'
+        related_name='subscribing',
+        verbose_name='Отслеживаемый автор'
     )
 
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['user', 'subscribe'],
+                fields=('user', 'subscribe'),
                 name='unique_subscription'
-            )
-        ]
+            ),
+        )
 
     def __str__(self):
         return f'{self.user.username} - {self.subscribe.username}'

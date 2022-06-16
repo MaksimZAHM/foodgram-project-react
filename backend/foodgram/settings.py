@@ -7,11 +7,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+FILE_NAME = 'shopping_cart.pdf'
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='secret')
 
-DEBUG = False
+DEBUG = bool(os.environ.get('DEBUG'))
 
 ALLOWED_HOSTS = ['*']
 
