@@ -9,6 +9,14 @@ load_dotenv()
 
 FILE_NAME = 'shopping_cart.pdf'
 
+MIN_NAME_LENGTH = 3
+
+MIN_TEXT_LENGTH = 10
+
+MIN_VALUE_COOKING_TIME = 1
+
+MIN_VALUE_AMOUNT = 0.01
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='secret')

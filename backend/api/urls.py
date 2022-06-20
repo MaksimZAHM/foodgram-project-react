@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from .views import (FavoriteShoppingCartView, IngredientsViewSet,
+from api.views import (FavoriteShoppingCartView, IngredientsViewSet,
                     RecipesViewSet, TagsViewSet)
 
 router = routers.DefaultRouter()

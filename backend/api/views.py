@@ -1,5 +1,5 @@
 import itertools
-
+from django.db.models import Sum
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -18,11 +18,8 @@ from recipes.serializers import RecipePartialSerializer
 from api.mixins import RetrieveListViewSet
 from api.filters import IngredientsFilter, RecipeFilter
 from api.permissions import IsAuthOwnerOrReadOnly
-from api.serializers import (
-    IngredientsSerializer,
-    RecipesCreateSerializer,
-    RecipesSerializer,
-    TagsSerializer)
+from api.serializers import (IngredientsSerializer, RecipesCreateSerializer,
+                             RecipesSerializer, TagsSerializer)
 
 CONTENT_TYPE = 'application/pdf'
 
@@ -66,10 +63,14 @@ class RecipesViewSet(viewsets.ModelViewSet):
         if not user_recipes:
             error = {'errors': 'Список рецептов пуст'}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
-        ingredients = self._get_shopping_cart(user_recipes)
+        ingredients = user_recipes.values(
+            'ingredients__name', 'ingredients__measurement_unit'
+        ).order_by(
+            'ingredients__name'
+        ).annotate(Sum('amount'))
         response = HttpResponse(content_type=CONTENT_TYPE)
-        response['Content-Disposition'] = ('attachment; '
-                                           'filename=FILE_NAME')
+        response['Content-Disposition'] = (
+            f'attachment; filename = {FILE_NAME}')
         canvas = Canvas(response)
         pdfmetrics.registerFont(TTFont('Roboto', 'Roboto.ttf'))
         canvas.setFont('Roboto', 50)
@@ -83,21 +84,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
             canvas.drawString(50, height, f'-  {k} - {v}')
         canvas.save()
         return response
-
-    def _get_shopping_cart(self, recipes):
-        ingredients_dict = {}
-        for recipe in recipes:
-            ingredients = recipe.ingredients.all()
-            for ingredient in ingredients:
-                name = ingredient.ingredient.name
-                measurement_unit = ingredient.ingredient.measurement_unit
-                amount = ingredient.amount
-                key = f'{name} ({measurement_unit})'
-                if key not in ingredients_dict.keys():
-                    ingredients_dict[key] = amount
-                else:
-                    ingredients_dict[key] += amount
-        return ingredients_dict
 
 
 class FavoriteShoppingCartView(views.APIView):

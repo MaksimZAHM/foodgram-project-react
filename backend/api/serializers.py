@@ -3,10 +3,12 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from recipes.models import (Amount, Favorite, Ingredient, Recipe,
-                            ShoppingCart, Tag)
+from recipes.models import (Amount, Favorite, Ingredient,
+                            Recipe, ShoppingCart, Tag)
 from recipes.serializers import Base64ImageField
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer 
+from foodgram.settings import (MIN_NAME_LENGTH, MIN_TEXT_LENGTH,
+                               MIN_VALUE_AMOUNT, MIN_VALUE_COOKING_TIME)
 
 
 class TagListField(serializers.RelatedField):
@@ -156,19 +158,26 @@ class RecipesCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Название должно начинаться с заглавной буквы!'
             )
-        elif len(name) < 3:
+        elif len(name) < MIN_NAME_LENGTH:
             raise serializers.ValidationError(
-                'Название должно содержать от 3 символов!'
+                f'Название должно содержать от {MIN_NAME_LENGTH} символов!'
             )
         return name
 
     def validate_text(self, text):
-        if not text.split(' ')[0].istitle():
+        if not text.split()[0].istitle():
             raise serializers.ValidationError(
                 'Описание должно начинаться с заглавной буквы!'
             )
-        elif len(text) < 10:
+        elif len(text) < MIN_TEXT_LENGTH:
             raise serializers.ValidationError(
-                'Описание должно содержать от 10 символов!'
+                f'Описание должно содержать от {MIN_TEXT_LENGTH} символов!'
             )
         return text
+
+    def validate_cooking_time(self, data):
+        if int(data) < MIN_VALUE_COOKING_TIME:
+            raise serializers.ValidationError(
+                'время приготовления'
+                f'не может быть меньше {MIN_VALUE_COOKING_TIME}')
+        return data

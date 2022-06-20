@@ -118,12 +118,12 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = ('user', 'subscribe')
-        validators = [
+        validators = (
             UniqueTogetherValidator(
                 queryset=Subscription.objects.all(),
-                fields=['user', 'subscribe']
+                fields=('user', 'subscribe')
             )
-        ]
+        )
     
     def to_representation(self, instance):
         request = self.context.get('request')
