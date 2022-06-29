@@ -32,7 +32,7 @@ class User(AbstractUser):
         verbose_name_plural = 'Пользователи'
         constraints = (
             models.UniqueConstraint(
-                fields=('username', 'email'),
+                fields=['username', 'email'],
                 name='unique_username_email'
             )
         )
@@ -60,7 +60,7 @@ class Subscription(models.Model):
         verbose_name_plural = 'Подписки'
         constraints = (
             models.UniqueConstraint(
-                fields=('user', 'subscribe'),
+                fields=['user', 'subscribe'],
                 name='unique_subscription'
             ),
         )
