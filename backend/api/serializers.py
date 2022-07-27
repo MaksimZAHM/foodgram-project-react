@@ -1,4 +1,3 @@
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -6,9 +5,9 @@ from rest_framework import serializers
 from recipes.models import (Amount, Favorite, Ingredient,
                             Recipe, ShoppingCart, Tag)
 from recipes.serializers import Base64ImageField
-from users.serializers import UserSerializer 
+from users.serializers import UserSerializer
 from foodgram.settings import (MIN_NAME_LENGTH, MIN_TEXT_LENGTH,
-                               MIN_VALUE_AMOUNT, MIN_VALUE_COOKING_TIME)
+                               MIN_VALUE_COOKING_TIME)
 
 
 class TagListField(serializers.RelatedField):
@@ -22,7 +21,7 @@ class TagListField(serializers.RelatedField):
         }
 
     def to_internal_value(self, data):
-        return get_object_or_404 (Tag, id=data)         
+        return get_object_or_404(Tag, id=data)
 
 
 class TagsSerializer(serializers.ModelSerializer):

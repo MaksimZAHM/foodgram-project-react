@@ -1,5 +1,7 @@
 import re
+
 from django.contrib.auth import password_validation as pass_val
+
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -124,7 +126,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                 fields=('user', 'subscribe')
             )
         )
-    
+
     def to_representation(self, instance):
         request = self.context.get('request')
         context = {'request': request}

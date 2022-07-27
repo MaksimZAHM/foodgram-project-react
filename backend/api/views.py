@@ -1,8 +1,10 @@
 import itertools
+
 from django.db.models import Sum
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status, views, viewsets
 from rest_framework.decorators import action
@@ -22,6 +24,7 @@ from api.serializers import (IngredientsSerializer, RecipesCreateSerializer,
                              RecipesSerializer, TagsSerializer)
 
 CONTENT_TYPE = 'application/pdf'
+
 
 class IngredientsViewSet(RetrieveListViewSet):
     queryset = Ingredient.objects.all()

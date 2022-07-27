@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator
 from django.db import models
+
 from users.models import User
 from foodgram.settings import MIN_VALUE_AMOUNT, MIN_VALUE_COOKING_TIME
 
@@ -95,7 +96,7 @@ class Recipe(models.Model):
         verbose_name='Время приготовления',
         validators=(MinValueValidator(
             MIN_VALUE_COOKING_TIME, 'слишком малое значение'),
-        )   
+        )
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
